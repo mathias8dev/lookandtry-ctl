@@ -1,0 +1,11 @@
+{
+  "clientId": "lookctl",
+  "displayName": "LookAndTry CLI and MCP",
+  "applicationType": "NATIVE",
+  "tokenEndpointAuthMethod": "NONE",
+  "consentPolicy": "EXPLICIT",
+  "redirectUris": ["http://127.0.0.1/oauth2/callback"],
+  "scopes": ["openid", "email", "offline_access", "lookandtry.api"],
+  "defaultResource": "https://api.lookandtry.example/",
+  "nativeAuthenticationEnabled": false
+}
