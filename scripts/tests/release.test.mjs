@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { mkdtemp, writeFile, rm } from "node:fs/promises";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
-import { collectArtifacts, sha256, publish } from "../release.mjs";
+import { collectArtifacts, sha256, requireReleaseContext } from "../release.mjs";
 import { TARGETS } from "../targets.mjs";
 test("release requires all six exact-revision artifacts and rejects drift before publication", async t => {
   const directory = await mkdtemp(join(tmpdir(), "lookctl-manifest-"));
@@ -26,6 +26,11 @@ test("release requires all six exact-revision artifacts and rejects drift before
   await rm(join(directory, "manifest-linux-arm64.json"));
   await assert.rejects(collectArtifacts(directory, "0.1.0", revision), /ENOENT/);
 });
-test("release cannot be published from a local shell or an automatic pipeline", async () => {
-  await assert.rejects(publish(), /explicit workflow dispatch/);
+test("release requires a manual workflow in the expected repository and branch independently of the test runner environment", () => {
+  const allowed = { GITHUB_EVENT_NAME: "workflow_dispatch", GITHUB_REF: "refs/heads/main", GITHUB_REPOSITORY: "mathias8dev/lookandtry-ctl" };
+  assert.doesNotThrow(() => requireReleaseContext(allowed));
+  for (const environment of [{}, { ...allowed, GITHUB_EVENT_NAME: "push" },
+    { ...allowed, GITHUB_REF: "refs/heads/topic" }, { ...allowed, GITHUB_REPOSITORY: "someone/another-repo" }]) {
+    assert.throws(() => requireReleaseContext(environment), /explicit workflow dispatch/);
+  }
 });

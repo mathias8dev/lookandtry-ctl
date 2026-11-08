@@ -37,8 +37,12 @@ function gh(args, allowMissing = false) {
   return result.stdout;
 }
 
+export function requireReleaseContext(environment) {
+  if (environment.GITHUB_EVENT_NAME !== "workflow_dispatch" || environment.GITHUB_REF !== "refs/heads/main" || environment.GITHUB_REPOSITORY !== "mathias8dev/lookandtry-ctl") throw new Error("Publication requires an explicit workflow dispatch from lookandtry-ctl main");
+}
+
 export async function publish() {
-  if (process.env.GITHUB_EVENT_NAME !== "workflow_dispatch" || process.env.GITHUB_REF !== "refs/heads/main" || process.env.GITHUB_REPOSITORY !== "mathias8dev/lookandtry-ctl") throw new Error("Publication requires an explicit workflow dispatch from lookandtry-ctl main");
+  requireReleaseContext(process.env);
   const revision = process.env.GITHUB_SHA;
   const { version } = JSON.parse(await readFile(join(root, "package.json"), "utf8"));
   const directory = join(root, "dist/releases");
